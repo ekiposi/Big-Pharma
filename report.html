@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/output.css">
     <link href="fonts/LexendDecaRegular.ttf" rel="stylesheet">    <script src="js/jspdf.umd.min.js" defer></script>
     <script src="js/jspdf.plugin.autotable.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
     <link rel="stylesheet" href="css/dashstyle.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.full.min.js"></script>
 <script src="js/excel.js" defer></script>
@@ -171,27 +172,27 @@
     };
 
     const filterSales = () => {
-        const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
-        const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+        const { isAfter, isBefore, isSameDay, endOfDay, startOfDay, addMinutes } = window.dateFns
+
+        const startDate = startDateInput.value ? startOfDay(startDateInput.value) : null;
+        const endDate = endDateInput.value ? addMinutes(endOfDay(endDateInput.value), 1) : null;
         const filter = salesFilter.value;
 
         const filteredSales = salesHistory.filter((sale) => {
-            const saleDate = new Date(sale.date);
-            const withinDateRange =
-                (!startDate || saleDate >= startDate) &&
-                (!endDate || saleDate <= endDate);
+            const saleDate = startOfDay(sale.date);
 
-            if (!withinDateRange) return false;
+            // Date filters
+            const isWithinStartDate = startDate ? isAfter(saleDate, startDate) || isSameDay(saleDate, startDate) : true;
+            const isWithinEndDate = endDate ? isBefore(saleDate, endDate) || isSameDay(saleDate, endDate) : true;
 
-            if (filter === 'high') {
-                return sale.quantity > 50;
-            } else if (filter === 'medium') {
-                return sale.quantity > 20 && sale.quantity <= 50;
-            } else if (filter === 'low') {
-                return sale.quantity <= 20;
-            }
+            // Quantity filters
+            const matchesFilter = 
+                filter === 'high' ? sale.quantity > 50 :
+                filter === 'medium' ? sale.quantity > 20 && sale.quantity <= 50 :
+                filter === 'low' ? sale.quantity <= 20 :
+                true;
 
-            return true;
+            return isWithinStartDate && isWithinEndDate && matchesFilter;
         });
 
         renderTable(filteredSales);

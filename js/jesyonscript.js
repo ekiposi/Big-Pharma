@@ -104,7 +104,7 @@ salesForm.addEventListener('submit', (event) => {
          medication: medication.name,
          quantity,
          price: Number(medication.price),
-         date: window.dateFns.format(new Date(), 'dd-MM-yyyy'),
+         date: window.dateFns.format(new Date(), 'MM-dd-yyyy'),
          clientName: buyerName,
          category: medication.category
        });
@@ -136,6 +136,7 @@ const printReceipt = (buyerName, buyerPhone, buyerEmail, itemsSold) => {
         size: 72mm auto; /* Ensure page width is set to 72mm */
         margin: 0;
       }
+        
       body {
         font-family: 'Arial', sans-serif;
         font-size: 12px;
